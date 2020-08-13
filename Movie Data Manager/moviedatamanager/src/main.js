@@ -1,11 +1,13 @@
 import Vue from 'vue';
-import MovieTable from "./components/MovieTable.vue";
+import App from "./App.vue";
+import vuetify from './plugins/vuetify';
 
-Vue.use(MovieTable);
+Vue.use(App);
 
 Vue.config.productionTip = false;
 
 new Vue({
     el:'#app',
-    render: h => h(MovieTable)
+    vuetify,
+    render: h => h(App)
 })
