@@ -84,11 +84,11 @@ export default {
 
   created() {
     this.initialize();
+    // this.save();
   },
   methods: {
     initialize() {
-      axios
-        .get("https://reqres.in/api/users?page=2")
+      axios.get("https://reqres.in/api/users?page=2")
         .then((res) => {
           this.movies = res.data.data.map((item) => {
             return item;
@@ -97,6 +97,7 @@ export default {
         .catch((err) => console.log(err));
     },
     save() {
+      axios.post("https://reqres.in/api/users", this.editedItem)
       if (this.movies.some(({ id }) => this.editedItem.id === id)) {
         this.movies = this.movies.map((movie) =>
           movie.id === this.editedItem.id ? this.editedItem : movie
