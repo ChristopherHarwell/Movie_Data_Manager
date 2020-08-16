@@ -28,12 +28,14 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="primary" text @click="save()">Save</v-btn>
+              <v-btn color="primary" text @click="close()">Cancel</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
       </template>
       <template v-slot:item.actions="{ item }">
         <v-icon small @click="edit(item)">mdi-pencil</v-icon>
+        <v-icon small @click="copy()">mdi-checkbox-multiple-blank-outline</v-icon>
         <v-icon small @click="remove(item)">mdi-delete</v-icon>
       </template>
     </v-data-table>
@@ -109,32 +111,32 @@ export default {
       this.close();
     },
     update(item) {
-       axios
-        .put(`http://localhost:5000/api/Movie${item.id}`)
-        .then(() => {
-          axios
-            .get("http://localhost:5000/api/Movie")
-            .then((res) => {
-              this.movies = res.data.map((item) => {
-                return item;
-              });
-            })
-            .catch((err) => console.log(err));
-        });
+      axios.put(`http://localhost:5000/api/Movie${item.id}`).then(() => {
+        axios
+          .get("http://localhost:5000/api/Movie")
+          .then((res) => {
+            this.movies = res.data.map((item) => {
+              return item;
+            });
+          })
+          .catch((err) => console.log(err));
+      });
       this.close();
     },
     edit(item) {
       this.editedItem = { ...item };
       this.dialog = true;
     },
+    copy() {
+      alert("That button doesnt work yet");
+    },
     remove(item) {
       axios
         .delete(`http://localhost:5000/api/Movie/${item.id}`)
         .then(() => {
-          axios.get("http://localhost:5000/api/Movie")
-            .then((res) => {
-          this.movies = res.data.filter((movie) => {
-            return movie.id !== item.id;
+          axios.get("http://localhost:5000/api/Movie").then((res) => {
+            this.movies = res.data.filter((movie) => {
+              return movie.id !== item.id;
             });
           });
         })
