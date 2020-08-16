@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <v-data-table :headers="headers" :items="movies" :items-per-page="5" class="elevation-1">
+    <v-data-table :headers="headers" :items="movies" :items-per-page="all" class="elevation-1">
       <template v-slot:top>
         <v-dialog v-model="dialog" width="500">
           <template v-slot:activator="{on}">
@@ -37,14 +37,11 @@
         <v-icon small @click="remove(item)">mdi-delete</v-icon>
       </template>
     </v-data-table>
-
-    <div v-for="movie in movies" :key="movie.id">{{ movie.name }}</div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import VueRouter from "vue-router";
 export default {
   data() {
     return {
@@ -71,71 +68,77 @@ export default {
       dialog: false,
       editedItem: {
         name: "",
-        Description: "",
-        ReleaseYear: 0,
+        description: "",
+        releaseYear: null,
       },
       defaultItem: {
         name: "",
-        Description: "",
-        ReleaseYear: 0,
+        description: "",
+        releaseYear: null,
       },
     };
   },
 
   created() {
     this.initialize();
-    // this.save();
   },
   methods: {
     initialize() {
-      new VueRouter({
-        routes: [
-          // dynamic segments start with a colon
-          { path: "/:id" },
-        ],
-      });
       axios
-        .get("http://localhost:5000/api/movie")
+        .get("http://localhost:5000/api/Movie")
         .then((res) => {
           this.movies = res.data.map((item) => {
             return item;
           });
         })
         .catch((err) => console.log(err));
-
-      //  fetch("http://localhost:5000/api/movie").then(res => console.log(res))
     },
     save() {
-
-      if (this.movies.some(({ id }) => this.editedItem.id === id)) {
-        this.movies = this.movies.map((movie) =>
-          movie.id === this.editedItem.id ? this.editedItem : movie
-        );
-      } else {
-        this.movies.push(...this.movies, {
-          ...this.editedItem,
-          id: Date.now(),
-        }); // change Date.now
-      }
-
-      axios.post("http://localhost:5000/api/movie", this.movies).then((res) => {
-        console.log(res.data.movie)
-      });
-      // add a post request and add push afterwards
+      axios
+        .post("http://localhost:5000/api/Movie", this.editedItem)
+        .then(() => {
+          axios
+            .get("http://localhost:5000/api/Movie")
+            .then((res) => {
+              this.movies = res.data.map((item) => {
+                return item;
+              });
+            })
+            .catch((err) => console.log(err));
+        });
       this.close();
     },
-    update() {},
+    update(item) {
+       axios
+        .put(`http://localhost:5000/api/Movie${item.id}`)
+        .then(() => {
+          axios
+            .get("http://localhost:5000/api/Movie")
+            .then((res) => {
+              this.movies = res.data.map((item) => {
+                return item;
+              });
+            })
+            .catch((err) => console.log(err));
+        });
+      this.close();
+    },
     edit(item) {
       this.editedItem = { ...item };
       this.dialog = true;
     },
     remove(item) {
-      // axios.delete(`http://localhost:5000/api/movie/, item.id`).then(res) 
-      this.movies = this.movies.filter((movie) => {
-        return movie.id !== item.id;
-      });
-      
-
+      axios
+        .delete(`http://localhost:5000/api/Movie/${item.id}`)
+        .then(() => {
+          axios.get("http://localhost:5000/api/Movie")
+            .then((res) => {
+          this.movies = res.data.filter((movie) => {
+            return movie.id !== item.id;
+            });
+          });
+        })
+        .catch((err) => console.log(err));
     },
     close() {
       this.editedItem = { ...this.defaultItem };
