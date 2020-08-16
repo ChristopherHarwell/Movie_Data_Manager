@@ -7,8 +7,6 @@
             <v-btn color="primary" dark class="mb-2" v-on="on">New Item</v-btn>
           </template>
           <v-card>
-            <v-card-title class="headline grey lighten-2">Privacy Policy</v-card-title>
-
             <v-card-text>
               <v-container>
                 <v-row>
@@ -16,10 +14,10 @@
                     <v-text-field v-model="editedItem.name" label="Name"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.Description" label="Description"></v-text-field>
+                    <v-text-field v-model="editedItem.description" label="description"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.ReleaseYear" label="Release Year"></v-text-field>
+                    <v-text-field v-model="editedItem.releaseYear" label="Release Year"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -40,44 +38,46 @@
       </template>
     </v-data-table>
 
-    <div v-for="movie in movies" :key="movie.id">{{ movie.email }}</div>
+    <div v-for="movie in movies" :key="movie.id">{{ movie.name }}</div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import VueRouter from "vue-router";
 export default {
   data() {
     return {
       headers: [
-               {
-          text: "email",
+        {
+          text: "id",
           align: "start",
-          value: "email",
+          value: "id",
         },
         {
           text: "name",
           align: "start",
           value: "name",
         },
-        { text: "Description", value: "Description" },
-        { text: "ReleaseYear", value: "ReleaseYear" },
+        {
+          text: "description",
+          align: "start",
+          value: "description",
+        },
+        { text: "releaseYear", value: "releaseYear" },
         { text: "Actions", value: "actions", sortable: false },
-
-        //   { text: 'Protein (g)', value: 'protein' },
-        //   { text: 'Iron (%)', value: 'iron' },
       ],
       movies: [],
       dialog: false,
       editedItem: {
         name: "",
         Description: "",
-        ReleaseYear: "",
+        ReleaseYear: 0,
       },
       defaultItem: {
         name: "",
         Description: "",
-        ReleaseYear: "",
+        ReleaseYear: 0,
       },
     };
   },
@@ -88,16 +88,25 @@ export default {
   },
   methods: {
     initialize() {
-      axios.get("https://reqres.in/api/users?page=2")
+      new VueRouter({
+        routes: [
+          // dynamic segments start with a colon
+          { path: "/:id" },
+        ],
+      });
+      axios
+        .get("http://localhost:5000/api/movie")
         .then((res) => {
-          this.movies = res.data.data.map((item) => {
+          this.movies = res.data.map((item) => {
             return item;
           });
         })
         .catch((err) => console.log(err));
+
+      //  fetch("http://localhost:5000/api/movie").then(res => console.log(res))
     },
     save() {
-      axios.post("https://reqres.in/api/users", this.editedItem)
+
       if (this.movies.some(({ id }) => this.editedItem.id === id)) {
         this.movies = this.movies.map((movie) =>
           movie.id === this.editedItem.id ? this.editedItem : movie
@@ -108,6 +117,10 @@ export default {
           id: Date.now(),
         }); // change Date.now
       }
+
+      axios.post("http://localhost:5000/api/movie", this.movies).then((res) => {
+        console.log(res.data.movie)
+      });
       // add a post request and add push afterwards
       this.close();
     },
@@ -117,9 +130,12 @@ export default {
       this.dialog = true;
     },
     remove(item) {
+      // axios.delete(`http://localhost:5000/api/movie/, item.id`).then(res) 
       this.movies = this.movies.filter((movie) => {
         return movie.id !== item.id;
       });
+      
+
     },
     close() {
       this.editedItem = { ...this.defaultItem };
