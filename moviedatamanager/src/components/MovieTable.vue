@@ -11,13 +11,24 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" :counter="max" :rules="nameRules" label="Name" required></v-text-field>
+                    <v-text-field
+                      v-model="editedItem.name"
+                      :counter="max"
+                      :rules="nameRules"
+                      label="Name"
+                      required
+                    ></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.description" label="description"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.releaseYear" :rules="releaseYearRules" label="Release Year" required></v-text-field>
+                    <v-text-field
+                      v-model="editedItem.releaseYear"
+                      :rules="releaseYearRules"
+                      label="Release Year"
+                      required
+                    ></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -27,7 +38,7 @@
 
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="primary" text @click="save()">Save</v-btn>
+              <v-btn color="primary" text :disabled="!valid" @click="save()">Save</v-btn>
               <v-btn color="primary" text @click="close()">Cancel</v-btn>
             </v-card-actions>
           </v-card>
@@ -46,55 +57,57 @@
 import axios from "axios";
 export default {
   data: () => ({
-valid: true,
-      name: '',
-      nameRules: [
-        v => !!v || 'Name is required',
-        v => (v && v.length <= 50) || 'Name must be less than 50 characters',
-      ],
-      description: '',
-      descriptionRules: [
-        v => !!v || 'Release Year is required',
-        v => (v && v.length <= 500) || 'Release Year must be less than 500 characters',
-      ],
-      releaseYear: '',
-      releaseYearRules: [
-        v => !!v || 'Release Year is required',
-        v => (v && v.length === 4) || 'Release Year must be 4 characters',
-      ],
-    
-      headers: [
-        {
-          text: "id",
-          align: "start",
-          value: "id",
-        },
-        {
-          text: "name",
-          align: "start",
-          value: "name",
-        },
-        {
-          text: "description",
-          align: "start",
-          value: "description",
-        },
-        { text: "releaseYear", value: "releaseYear" },
-        { text: "Actions", value: "actions", sortable: false },
-      ],
-      movies: [],
-      dialog: false,
-      editedItem: {
-        name: "",
-        description: "",
-        releaseYear: null,
+    valid: true,
+    name: "",
+    nameRules: [
+      (v) => !!v || "Name is required",
+      (v) => (v && v.length <= 50) || "Name must be less than 50 characters",
+    ],
+    description: "",
+    descriptionRules: [
+      (v) => !!v || "Release Year is required",
+      (v) =>
+        (v && v.length <= 500) ||
+        "Release Year must be less than 500 characters",
+    ],
+    releaseYear: "",
+    releaseYearRules: [
+      (v) => !!v || "Release Year is required",
+      (v) => (v && v.length === 4) || "Release Year must be 4 characters",
+    ],
+
+    headers: [
+      {
+        text: "id",
+        align: "start",
+        value: "id",
       },
-      defaultItem: {
-        name: "",
-        description: "",
-        releaseYear: null,
+      {
+        text: "name",
+        align: "start",
+        value: "name",
       },
-}),
+      {
+        text: "description",
+        align: "start",
+        value: "description",
+      },
+      { text: "releaseYear", value: "releaseYear" },
+      { text: "Actions", value: "actions", sortable: false },
+    ],
+    movies: [],
+    dialog: false,
+    editedItem: {
+      name: "",
+      description: "",
+      releaseYear: null,
+    },
+    defaultItem: {
+      name: "",
+      description: "",
+      releaseYear: null,
+    },
+  }),
   created() {
     this.initialize();
   },
@@ -176,8 +189,14 @@ valid: true,
       this.editedItem = { ...this.defaultItem };
       this.dialog = false;
     },
-    validateField() {
+    validate() {
       this.$refs.form.validate();
+    },
+    reset() {
+      this.$refs.form.reset();
+    },
+    resetValidation() {
+      this.$refs.form.resetValidation();
     },
   },
   computed: {
@@ -207,11 +226,6 @@ valid: true,
 
       return rules;
     },
-  },
-  watch: {
-    match: "validateField",
-    max: "validateField",
-    model: "validateField",
   },
 };
 </script>
