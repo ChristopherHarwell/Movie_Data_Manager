@@ -11,13 +11,13 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" label="Name"></v-text-field>
+                    <v-text-field v-model="editedItem.name" :counter="max" :rules="nameRules" label="Name" required></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.description" label="description"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.releaseYear" label="Release Year"></v-text-field>
+                    <v-text-field v-model="editedItem.releaseYear" :rules="releaseYearRules" label="Release Year" required></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -45,8 +45,24 @@
 <script>
 import axios from "axios";
 export default {
-  data() {
-    return {
+  data: () => ({
+valid: true,
+      name: '',
+      nameRules: [
+        v => !!v || 'Name is required',
+        v => (v && v.length <= 50) || 'Name must be less than 50 characters',
+      ],
+      description: '',
+      descriptionRules: [
+        v => !!v || 'Release Year is required',
+        v => (v && v.length <= 500) || 'Release Year must be less than 500 characters',
+      ],
+      releaseYear: '',
+      releaseYearRules: [
+        v => !!v || 'Release Year is required',
+        v => (v && v.length === 4) || 'Release Year must be 4 characters',
+      ],
+    
       headers: [
         {
           text: "id",
@@ -78,9 +94,7 @@ export default {
         description: "",
         releaseYear: null,
       },
-    };
-  },
-
+}),
   created() {
     this.initialize();
   },
@@ -133,20 +147,18 @@ export default {
       this.dialog = true;
     },
     copy(item) {
-      let newItem = {...item};
+      let newItem = { ...item };
       delete newItem.id;
-      axios
-        .post("http://localhost:5000/api/Movie", newItem)
-        .then(() => {
-          axios
-            .get("http://localhost:5000/api/Movie")
-            .then((res) => {
-              this.movies = res.data.map((item) => {
-                return item;
-              });
-            })
-            .catch((err) => console.log(err));
-        });
+      axios.post("http://localhost:5000/api/Movie", newItem).then(() => {
+        axios
+          .get("http://localhost:5000/api/Movie")
+          .then((res) => {
+            this.movies = res.data.map((item) => {
+              return item;
+            });
+          })
+          .catch((err) => console.log(err));
+      });
     },
     remove(item) {
       axios
@@ -164,6 +176,42 @@ export default {
       this.editedItem = { ...this.defaultItem };
       this.dialog = false;
     },
+    validateField() {
+      this.$refs.form.validate();
+    },
+  },
+  computed: {
+    rules() {
+      const rules = [];
+
+      if (this.max) {
+        const rule = (v) =>
+          (v || "").length <= this.max ||
+          `A maximum of ${this.max} characters is allowed`;
+
+        rules.push(rule);
+      }
+
+      if (!this.allowSpaces) {
+        const rule = (v) =>
+          (v || "").indexOf(" ") < 0 || "No spaces are allowed";
+
+        rules.push(rule);
+      }
+
+      if (this.match) {
+        const rule = (v) => (!!v && v) === this.match || "Values do not match";
+
+        rules.push(rule);
+      }
+
+      return rules;
+    },
+  },
+  watch: {
+    match: "validateField",
+    max: "validateField",
+    model: "validateField",
   },
 };
 </script>
